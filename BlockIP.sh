@@ -7,7 +7,7 @@ LoginHistory="/var/log/auth.log*"
 DenyFile="/etc/hosts.deny"
 LogFile="/var/log/BlockIP.log"
 
-IPs=`grep -i "failed" /var/log/auth.log* | egrep -o "([0-9]{1,3}\.){3}[0-9]{1,3}" | sort -n | uniq -c | awk '$1>=10 {print $1,$2}' OFS="\t" | sort -nr`
+IPs=`grep -i "failed" ${LoginHistory} | egrep -o "([0-9]{1,3}\.){3}[0-9]{1,3}" | sort -n | uniq -c | awk '$1>=10 {print $1,$2}' OFS="\t" | sort -nr`
 
 for i in ${IPs}
 do
