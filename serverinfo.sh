@@ -18,11 +18,11 @@ white='\e[1;37m'
 default='\e[0m'
 
 if [ -f /etc/redhat-release ]; then
-  echo -e "${green}Server OS: ${default}`cat /etc/redhat-release`"
-fi
-
-if [ -f /etc/issue ]; then
-  echo -e "${green}Server OS: ${default}`cat /etc/issue`"
+  echo -e "${blue}Server OS: ${default}`cat /etc/redhat-release`"
+elif [ -f /etc/issue ]; then
+  echo -e "${blue}Server OS: ${default}`cat /etc/issue`"
+else
+  echo -e "${red}Server OS could not be detected.${default}`cat /etc/issue`"
 fi
 
 echo -e "${blue} 高亮蓝字 ${default} 默认配色" 
