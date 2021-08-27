@@ -25,5 +25,7 @@ else
   echo -e "${red}Server OS could not be detected.${default}`cat /etc/issue`"
 fi
 
+echo -e "${blue}CPU Cores: ${default}`cat /proc/cpuinfo | grep processor | wc -l`"
+
 echo -e "${blue} 高亮蓝字 ${default} 默认配色" 
 echo -e "${yellow} 高亮黄字 ${default} 默认配色"
