@@ -22,7 +22,7 @@ if [ $UID -ne 0 ]; then
     sudo -i
 else
     echo -e "${green}You are now running as root."
-if
+fi
 
 if [ -f /etc/redhat-release ]; then
     echo -e "${blue}Server OS: ${default}`cat /etc/redhat-release`"
