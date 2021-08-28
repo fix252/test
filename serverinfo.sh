@@ -36,5 +36,7 @@ echo -e "${blue}CPU Cores: ${default}`cat /proc/cpuinfo | grep processor | wc -l
 
 echo -e "${blue}Memory Size: ${default}`free -h | grep Mem | awk '{print $2}'`"
 
+echo -e "${blue}Disk Capacity:\n${default}`lsblk | awk '$6~/disk/ {print $1,$4}' OFS=\"\t\"`"
+
 #echo -e "${blue} 高亮蓝字 ${default} 默认配色"
 #echo -e "${yellow} 高亮黄字 ${default} 默认配色"
