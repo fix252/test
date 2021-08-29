@@ -12,4 +12,4 @@ echo "Vcencode============${Vcencode}"
 NewLink="https://t66y.com/index.php?u=${User}&${Vcencode}"
 echo "NewLink=======${NewLink}"
 
-curl -sf -A "$UA" -d "url=&ext=&adsaction=userads1010" ${NewLink} > /dev/null
+curl -sf -A "$UA" -d "url=&ext=${EXT}&adsaction=userads1010" ${NewLink} > /dev/null
