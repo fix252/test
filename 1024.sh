@@ -6,10 +6,13 @@ EXT="75e07"
 Link="https://t66y.com/index.php?u=${User}&ext=${EXT}"
 echo "Link===============${Link}"
 
-Vcencode=`curl -sf -A "${UA}" ${Link} | egrep -o "vcencode=[0-9]*"`
+Response=`curl -sf -A "${UA}" ${Link}`
+
+#Vcencode=`curl -sf -A "${UA}" ${Link} | egrep -o "vcencode=[0-9]*"`
+Vcencode=`egrep -o "vcencode=[0-9]*" ${Response}`
 echo "Vcencode============${Vcencode}"
 
 NewLink="https://t66y.com/index.php?u=${User}&${Vcencode}"
 echo "NewLink=======${NewLink}"
 
-curl -sf -A "$UA" -d "url=&ext=&adsaction=userads1010" ${NewLink} >/dev/null 2>&1
+curl -sf -A "$UA" -d "url=&ext=&adsaction=userads1010" ${NewLink}
