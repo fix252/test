@@ -9,7 +9,7 @@ echo "Link===============${Link}"
 Vcencode=`curl -sf -A "${UA}" ${Link} | egrep -o "vcencode=[0-9]*"`
 echo "Vcencode============${Vcencode}"
 
-NewLink="https://t66y.com/index.php?u=${UID}&${Vcencode}"
+NewLink="https://t66y.com/index.php?u=${User}&${Vcencode}"
 echo "NewLink=======${NewLink}"
 
-curl -sf -A "$UA" -d "url=&ext=&adsaction=userads1010" ${NewLink}
+curl -sf -A "$UA" -d "url=&ext=&adsaction=userads1010" ${NewLink} >> /dev/null
