@@ -1,6 +1,6 @@
 <?php
 	$url1 = "https://t66y.com/index.php?u=584544&ext=75e07"; 
-	$agent ="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36";	
+	$agent ="Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko";	
 	$curl = curl_init();
 	curl_setopt($curl, CURLOPT_URL, $url1);
 	curl_setopt($curl, CURLOPT_HEADER, 0); 
@@ -21,7 +21,7 @@
 	$url2 = "https://t66y.com/index.php".$data[0];
 	echo "New URL: ", $url2, "\n";
 
-	sleep(5);
+	sleep(3);
 
 	$data = ['url'=>'','ext'=>'75e07','adsaction'=>'userads1010'];
 	$headers = array('Content-Type: application/x-www-form-urlencoded');
