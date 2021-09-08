@@ -11,12 +11,16 @@ LogFile="/var/log/BlockIP.log"
 
 IPs=`lastb | awk '{print $3}'| sort -n | uniq -c | awk '$1>=10 {print $2}'`
 
+echo -e "`date +"%F %T"`:" >> ${LogFile}
+
 for i in ${IPs}
 do
         if grep -q "sshd:${i}$" ${DenyFile}; then
-                echo -e "`date +"%F %T"`: Existing IP ${i}" >> ${LogFile}
+                #echo -e "`date +"%F %T"`: Existing IP ${i}" >> ${LogFile}
+                :
         else
-                echo -e "`date +"%F %T"`: Blocking IP ${i}" >> ${LogFile}
+                echo -e "Blocking IP ${i}" >> ${LogFile}
+                
                 echo -e "\n#`date +"%F %T"`" >> ${DenyFile}
                 echo "sshd:${i}" >> ${DenyFile}
         fi
