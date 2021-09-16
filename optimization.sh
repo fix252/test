@@ -15,11 +15,11 @@ fi
 echo -e "${green}You are now running as root."
 
 # 1, Add date and time to command history
-Profile="/root/1.txt"
+Profile="/etc/profile"
 if grep -q "^export HISTTIMEFORMAT" ${Profile}; then
   echo -e "${green}Details exist in command history. Won't re-do it."
 else
   echo 'export HISTTIMEFORMAT="%F %T "' >> ${Profile}
-  #source ${Profile}
+  source ${Profile}
   echo -e "${green}Done for command history optimization."
 fi
