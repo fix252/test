@@ -20,10 +20,9 @@ if grep -q "^export HISTTIMEFORMAT" ${Profile}; then
   echo -e "${green}Command history was optimized. Won't re-do it."
 else  
   cat >> ${Profile} << EOF
-    export HISTTIMEFORMAT="%F %T "
-    export HISTORY_FILE=/var/log/command.log
-    export PROMPT_COMMAND='{ date "+%F %T ## \$(who am i |awk "{print \\\$3,\\\$4,\\\$1,\\\$2,\\\$5}") ## \$(whoami) ## \$(history 1 | { read x cmd; echo "\$cmd"; })"; } >>\$HISTORY_FILE'
-  EOF
+export HISTTIMEFORMAT="%F %T "
+export PROMPT_COMMAND='{ date "+%F %T ## \$(who am i |awk "{print \\\$3,\\\$4,\\\$1,\\\$2,\\\$5}") ## \$(whoami) ## \$(history 1 | { read x cmd; echo "\$cmd"; })"; } >> /var/log/command.log'
+EOF
   
   source ${Profile}
   echo -e "${green}Done for command history optimization."
