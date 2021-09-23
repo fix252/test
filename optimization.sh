@@ -22,7 +22,7 @@ else
   cat >> ${Profile} << EOF
     export HISTTIMEFORMAT="%F %T "
     export HISTORY_FILE=/var/log/command.log
-    export PROMPT_COMMAND='{ date "+%y-%m-%d %T ## \$(who am i |awk "{print \\\$3,\\\$4,\\\$1,\\\$2,\\\$5}") ## \$(whoami) ## \$(history 1 | { read x cmd; echo "\$cmd"; })"; } >>\$HISTORY_FILE'
+    export PROMPT_COMMAND='{ date "+%F %T ## \$(who am i |awk "{print \\\$3,\\\$4,\\\$1,\\\$2,\\\$5}") ## \$(whoami) ## \$(history 1 | { read x cmd; echo "\$cmd"; })"; } >>\$HISTORY_FILE'
   EOF
   
   source ${Profile}
