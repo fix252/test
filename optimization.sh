@@ -14,12 +14,17 @@ fi
 
 echo -e "${green}You are now running as root."
 
-# 1, Add date and time to command history
+# 1, Optimize command history
 Profile="/etc/profile"
 if grep -q "^export HISTTIMEFORMAT" ${Profile}; then
-  echo -e "${green}Details exist in command history. Won't re-do it."
-else
-  echo 'export HISTTIMEFORMAT="%F %T "' >> ${Profile}
+  echo -e "${green}Command history was optimized. Won't re-do it."
+else  
+  cat >> ${Profile} << EOF
+         export HISTTIMEFORMAT="%F %T "
+         export HISTORY_FILE=/var/log/command.log
+         export PROMPT_COMMAND='{ date "+%y-%m-%d %T ## \$(who am i |awk "{print \\\$3,\\\$4,\\\$1,\\\$2,\\\$5}") ## \$(whoami) ## \$(history 1 | { read x cmd; echo "\$cmd"; })"; } >>\$HISTORY_FILE'
+  EOF
+  
   source ${Profile}
   echo -e "${green}Done for command history optimization."
 fi
