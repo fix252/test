@@ -11,7 +11,7 @@ LogFile="/var/log/BlockIP.log"
 
 IPs=`lastb | awk '{print $3}'| sort -n | uniq -c | awk '$1>=10 {print $2}'`
 
-echo -e "`date +"%F %T"`:" >> ${LogFile}
+echo -e "`date +"%F %T"`" >> ${LogFile}
 
 for i in ${IPs}
 do
