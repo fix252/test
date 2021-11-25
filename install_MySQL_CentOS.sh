@@ -82,8 +82,9 @@ function install_mysql(){
 	fi
 	
 	#解压出的目录名应形如mysql-5.7.35-linux-glibc2.12-x86_64，对其进行正则匹配
-	_dir=`ls -lt -d */ | awk 'NR==1 {print $NF}'`
-	if echo ${_dir} | grep -q "^mysql-.*-linux-glibc.*-x86_64/$"; then
+	_dir=$(ls -lt -d */ | awk '{print $NF}' | grep "^mysql-.*-linux-glibc.*-x86_64/$")
+	
+	if [ ! -z ${_dir} ]; then
 		echo "解压目录名为${_dir}"
 	else
 		echo -e "${yellow}未检测到解压出的目录，脚本退出！${default}"
@@ -173,9 +174,8 @@ function update_settings(){
 	fi
 	
 	update_setting "long_query_time" 4
-	update_setting "slow_query_log_file"  "${logdir}/mysql-slow.log"
-	update_setting "relay_log"  "${logdir}/mysql-relay.log"
-	update_setting "innodb_log_group_home_dir" ${logdir}
+	update_setting "slow_query_log_file" "${logdir}/mysql-slow.log"
+	update_setting "relay_log" "${logdir}/mysql-relay.log"
 	update_setting "innodb_undo_directory" ${logdir}
 	echo "其他参数设置，请到配置文件${conf}中查看。"
 }
@@ -204,8 +204,10 @@ function update_account(){
 	}
 	done
 	
+	#创建账号root@%，也可在此创建其他账号。
 	mysql -uroot -e "create user 'root'@'%' identified by '${_pass1}';"
 	mysql -uroot -e "grant all privileges on *.* to 'root'@'%' with grant option;"
+	
 	mysql -uroot -e "alter user 'root'@'localhost' identified by '${_pass1}';"
 	mysql -uroot -p${_pass1} -e "flush privileges;" 2>/dev/null
 	
@@ -243,7 +245,7 @@ echo -e "请使用如下命令管理mysql服务："
 echo -e "service mysqld start|stop|restart|status"
 echo -e "------------------------------------------------------------${default}"
 
-PS1='[\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]]\$ '
+PS1='[\[\e]0;\u@\h: \w\a\]\${debian_chroot:+(\$debian_chroot)}\[\033[32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]]\\$ '
 alias ll='ls -alh'
 EOF
 	elif ! grep -qi "mysqld" ${_profile}; then
