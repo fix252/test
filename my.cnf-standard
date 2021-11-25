@@ -129,8 +129,8 @@ innodb_io_capacity = 4000
 innodb_io_capacity_max = 8000
 # 事务等待获取资源等待的最长时间，超过这个时间还未分配到资源则会返回应用失败，默认50s
 innodb_lock_wait_timeout = 30
-# 日志组所在的路径，默认为data的home目录；
-innodb_log_group_home_dir = /data/mysql/log
+# 日志组所在的路径，默认为data的home目录。为照顾xtrabackup还原的操作，建议不修改innodb_log_group_home_dir。
+#innodb_log_group_home_dir = /data/mysql/log
 innodb_undo_directory = /data/mysql/log
 # innodb_flush_method = O_DIRECT-不经过系统缓存直接存入磁盘，
 innodb_file_format = Barracuda
