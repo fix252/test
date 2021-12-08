@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#本脚本在CentOS系统上通过Generic包安装mysql数据库
+#本脚本在CentOS系统上通过Generic包安装mysql 5.7数据库
 #安装前请确认脚本文件、tar包、配置模板等3个文件位于同一目录
 #Generic tar包下载页面 https://downloads.mysql.com/archives/community/
 tarball="mysql-5.7.35-linux-glibc2.12-x86_64.tar.gz"
@@ -47,7 +47,7 @@ function check_env(){
 	fi
 
 	if [ -d ${basedir} ] || [ -f ${conf} ]; then
-		echo -e "${yellow}注意：basedir目录或my.cnf文件存在。脚本退出！${default}"
+		echo -e "${yellow}注意：basedir目录或${conf}文件存在。脚本退出！${default}"
 		exit 1
 	else
 		echo -e "恭喜，未检测到basedir目录或my.cnf文件冲突。"
@@ -191,6 +191,18 @@ function update_account(){
 		exit 1
 	fi
 	
+	mysql -uroot -e "create user 'bk'@'%' identified by 'bk@monitor';"
+	mysql -uroot -e "grant process,references,replication client,replication slave,select,show databases,show view on *.* to 'bk'@'%';"
+	echo "已创建账号bk，密码bk@monitor，用于监控。"
+	
+	mysql -uroot -e "create user 'backup'@'%' identified by 'backup';"
+	mysql -uroot -e "grant process, select, reload, show view, lock tables, trigger, replication client, event on *.* to 'backup'@'%';"
+	echo "已创建账号backup，密码backup，用于备份。"
+	
+	mysql -uroot -e "create user 'repl'@'%' identified by 'repl';"
+	mysql -uroot -e "grant replication slave on *.* to 'repl'@'%';"
+	echo "已创建账号repl，密码repl，用于主从同步。"
+	
 	read -sp "请设置root密码：" _pass1
 	echo
 	read -sp "请再次输入root密码：" _pass2
@@ -204,27 +216,28 @@ function update_account(){
 	}
 	done
 	
-	#创建账号root@%，也可在此创建其他账号。
+	#创建账号root@%
 	mysql -uroot -e "create user 'root'@'%' identified by '${_pass1}';"
 	mysql -uroot -e "grant all privileges on *.* to 'root'@'%' with grant option;"
 	
+	#修改密码root@localhost
 	mysql -uroot -e "alter user 'root'@'localhost' identified by '${_pass1}';"
 	mysql -uroot -p${_pass1} -e "flush privileges;" 2>/dev/null
 	
-	echo -e "恭喜，root密码设置成功，请使用新密码登录。"
+	echo -e "已设置root密码，请使用新密码登录。"
 }
 
 #6，设置系统服务
 function add_service(){
 	echo -e "${blue}6，设置系统服务${default}"
 	cd ${basedir}
-	/usr/bin/cp -f support-files/mysql.server /etc/init.d/mysqld
-	chmod +x /etc/init.d/mysqld
-	chkconfig --add mysqld
-	chkconfig --level 345 mysqld on
-	chkconfig mysqld on
-	echo -e "恭喜，已设置开机自启mysqld服务。"
-	echo -e "请使用service mysqld start|stop|restart|status管理mysql。"
+	/usr/bin/cp -f support-files/mysql.server /etc/init.d/mysql
+	chmod +x /etc/init.d/mysql
+	chkconfig --add mysql
+	chkconfig --level 345 mysql on
+	chkconfig mysql on
+	echo -e "恭喜，已设置开机自启mysql服务。"
+	echo -e "请使用service mysql start|stop|restart|status管理mysql。"
 }
 
 #7，个性化设置
@@ -242,17 +255,17 @@ default='\e[0m'
 
 echo -e "${blue}------------------------------------------------------------"
 echo -e "请使用如下命令管理mysql服务："
-echo -e "service mysqld start|stop|restart|status"
+echo -e "service mysql start|stop|restart|status"
 echo -e "------------------------------------------------------------${default}"
 
 PS1='[\[\e]0;\u@\h: \w\a\]\${debian_chroot:+(\$debian_chroot)}\[\033[32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]]\\$ '
 alias ll='ls -alh'
 EOF
-	elif ! grep -qi "mysqld" ${_profile}; then
+	elif ! grep -qi "mysql" ${_profile}; then
 		cat >> ${_profile} << EOF
 
 echo -e "\e[1;34m请使用如下命令管理mysql服务："
-echo -e "service mysqld start|stop|restart|status\e[0m"
+echo -e "service mysql start|stop|restart|status\e[0m"
 EOF
 	fi
 }
