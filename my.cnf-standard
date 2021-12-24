@@ -32,7 +32,7 @@ log-bin = /data/mysql/log/master-bin   #设置log-bin的前提是设置server-id
 expire_logs_days = 7
 max_binlog_size = 1G                 #视情况修改binlog文件大小
 binlog_cache_size = 4m
-max_binlog_cache_size = 1G
+#max_binlog_cache_size = 1G
 
 # 设置autocommit=0，则用户将一直处于某个事务中，直到执行一条commit提交或rollback语句才会结束当前事务重新开始一个新的事务。set autocommit=0的好处是在频繁开启事务的场景下，减少一次begin的交互。
 autocommit = 1
