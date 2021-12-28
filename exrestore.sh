@@ -33,7 +33,7 @@ function get_config(){
 		exit 1
 	fi
 	
-	echo $(grep -i "^[ ]*$1[ ]*=[ ]*" "$2" | awk -F'[ =]' '{print $NF}')
+	echo $(grep -i "^[ ]*$1[ ]*=[ ]*" "$2" | awk -F'[ =]' 'NR==1 {print $NF}')
 }
 
 #从配置文件读取配置
