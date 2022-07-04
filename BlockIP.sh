@@ -9,7 +9,7 @@ LogFile="/var/log/BlockIP.log"
 #LoginHistory="/var/log/auth.log*"
 #IPs=`grep -i "failed" ${LoginHistory} | egrep -o "([0-9]{1,3}\.){3}[0-9]{1,3}" | sort -n | uniq -c | awk '$1>=10 {print $2}'`
 
-IPs=`lastb | awk '{print $3}'| sort -n | uniq -c | awk '$1>=10 {print $2}'`
+IPs=`lastb -a | awk '$2~/ssh/ {print $NF}'| sort -n | uniq -c | awk '$1>=10 {print $2}'`
 
 echo -e "`date +"%F %T"`" >> ${LogFile}
 
