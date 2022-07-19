@@ -1,37 +1,37 @@
 [client]
-default-character-set=utf8mb4
+default_character_set=utf8mb4
 
 [mysqld]
 federated
 
 ########basic settings########
 #视情况修改，可考虑以IP地址的最后一段作为id
-server-id = 10
-# By default we only accept connections from localhost
-#bind-address   = 0.0.0.0
+server_id = 10
+bind_address = 0.0.0.0
 port = 3306
 user = mysql
 basedir=/data/mysql
 datadir=/data/mysql/data
 socket=/tmp/mysql.sock
-pid-file = /data/mysql/mysql.pid
+pid_file = /data/mysql/mysql.pid
 
 #skip_grant_tables   #默认不启用。当启用（取消注释）时，使用任意密码均可登录MySQL，此时极可能导致数据泄露，一般仅用于重置密码
-#skip-slave-start    #服务启动时，不start slave。此配置仅用于从库（从实例）上，默认不启用
+#skip_slave_start    #服务启动时，不start slave。此配置仅用于从库（从实例）上，默认不启用
 #read_only=1         #实例开启只读。出于安全考虑，从实例建议启用只读，主实例不要设置
 
-# Disabling symbolic-links is recommended to prevent assorted security riskis
-symbolic-links = 0
+# Disabling symbolic_links is recommended to prevent assorted security riskis
+symbolic_links = 0
 lower_case_table_names = 1
-default-time-zone='+8:00'
+default_time_zone='+8:00'
 
 #######log bin settings######
 # 基于ROW复制(安全可靠)
 binlog_format = ROW
-log-bin = /data/mysql/log/master-bin   #设置log-bin的前提是设置server-id，不要带后缀
+log_bin = /data/mysql/log/master-bin   #设置log_bin的前提是设置server_id，不要带后缀
 expire_logs_days = 7
 max_binlog_size = 1G                 #视情况修改binlog文件大小
-binlog_cache_size = 4m
+binlog_cache_size = 4M
+# max_binlog_cache_size使用默认值即可，可注释掉
 #max_binlog_cache_size = 1G
 
 # 设置autocommit=0，则用户将一直处于某个事务中，直到执行一条commit提交或rollback语句才会结束当前事务重新开始一个新的事务。set autocommit=0的好处是在频繁开启事务的场景下，减少一次begin的交互。
@@ -39,17 +39,17 @@ autocommit = 1
 # utf8mb4编码是utf8编码的超集，兼容utf8，并且能存储4字节的表情字符。
 # 采用utf8mb4编码的好处是：存储与获取数据的时候，不用再考虑表情字符的编码与解码问题。
 character_set_server = utf8mb4
-collation-server = utf8mb4_general_ci
+collation_server = utf8mb4_general_ci
 skip_name_resolve = 1
-max_connections = 5000
+max_connections = 2000
 # 对于同一主机，如果有超出该参数值个数的中断错误连接，则该主机将被禁止连接。如需对该主机进行解禁，执行：FLUSH HOST。
 max_connect_errors = 1000
 # 数据库隔离级别
 transaction_isolation = READ-COMMITTED
 # MySQL在完成某些join（连接）需求的时候，为了减少参与join的“被驱动表”的读取次数以提高性能，需要使用到join buffer来协助完成join操作当join buffer 太小，MySQL不会将该buffer存入磁盘文件而是先将join buffer中的结果与需求join的表进行操作，然后清空join buffer中的数据，继续将剩余的结果集写入次buffer中
-join_buffer_size = 128M
+join_buffer_size = 8M
 tmp_table_size = 64M
-max_heap_table_size = 68M  #max_heap_table_size要大于tmp_table_size，可考虑大4M
+max_heap_table_size = 64M  #对应tmp_table_size，设置为64M或128M
 tmpdir = /tmp
 # 该值设置过小将导致单个记录超过限制后写入数据库失败，且后续记录写入也将失败
 max_allowed_packet = 512M
@@ -58,9 +58,9 @@ interactive_timeout = 1800
 # mysql在关闭一个非交互的连接之前所要等待的秒数
 wait_timeout = 1800
 # MySQL读入缓冲区的大小
-read_buffer_size = 16M
+read_buffer_size = 8M
 # MySQL的随机读缓冲区大小
-read_rnd_buffer_size = 8M
+read_rnd_buffer_size = 16M
 # MySQL的顺序读缓冲区大小
 sort_buffer_size = 8M
 
@@ -69,7 +69,7 @@ log_error  = /data/mysql/log/mysql-error.log
 # 开启慢查询日志
 slow_query_log = 1
 # 超出设值的SQL即被记录到慢查询日志
-long_query_time = 4
+long_query_time = 5
 slow_query_log_file = /data/mysql/log/mysql-slow.log
 # 表示记录下没有使用索引的查询
 log_queries_not_using_indexes = 0
@@ -86,7 +86,7 @@ min_examined_row_limit = 100
 master_info_repository = TABLE
 relay_log_info_repository = TABLE
 # 当每进行n次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘。设置为零是让系统自行决定
-sync_binlog = 5
+sync_binlog = 1
 # 开启全局事务ID，GTID能够保证让一个从服务器到其他的从服务器那里实现数据复制而且能够实现数据整合的
 gtid_mode = on
 # 开启gtid，必须主从全开
@@ -100,9 +100,10 @@ relay_log_recovery = 1
 binlog_gtid_simple_recovery = 1
 slave_skip_errors = ddl_exist_errors
 # 从实例开启多线程复制，加快同步速度。适用于单实例多库场景，不要用于单实例单库场景。主实例不用设置。
-#slave-parallel-type=LOGICAL_CLOCK
-#slave-parallel-workers=4
+#slave_parallel_type=LOGICAL_CLOCK
+#slave_parallel_workers=4
 #slave_pending_jobs_size_max=1G  #须大于主实例的max_allowed_packet设置
+#slave_preserve_commit_order = 1  #从实例上保证事务按relay-log中的顺序提交，从而保证数据一致性
 
 ########pxc settings########
 # 主键自增长不锁表
@@ -110,23 +111,24 @@ innodb_autoinc_lock_mode=2
 # 默认引擎
 default_storage_engine=InnoDB
 #
-log-slave-updates
+log_slave_updates
 
 ########innodb settings########
 # 这个参数在一开始初始化时就要加入my.cnf里，如果已经创建了表，再修改，启动MySQL会报错。最好为8K
 innodb_page_size = 16K
-# 数据缓冲区buffer pool大小，对于MySQL专用服务器，建议使用服务器内存的75%。非专用服务器请视情况修改。
+# 数据缓冲区buffer pool大小，对于MySQL专用服务器，建议使用服务器内存的50%，不超过60%。
 innodb_buffer_pool_size = 8G
-# 当buffer_pool的值较大的时候为1，较小的设置为8
+# 当buffer_pool的值较大的时候为1，较小的设置为8，不超过CPU core数的一半。
 innodb_buffer_pool_instances = 8
 # 运行时load缓冲池，快速预热缓冲池，将buffer pool的内容（文件页的索引）dump到文件中，然后快速load到buffer pool中。避免了数据库的预热过程，提高了应用访问的性能
 innodb_buffer_pool_load_at_startup = 1
 # 运行时dump缓冲池
 innodb_buffer_pool_dump_at_shutdown = 1
-# 在innodb中处理用户查询后，其结果在内存空间的缓冲池已经发生变化，但是还未记录到磁盘。这种页面称为脏页，将脏页记录到磁盘的过程称为刷脏
-innodb_lru_scan_depth = 2000
+# 在innodb中处理用户查询后，其结果在内存空间的缓冲池已经发生变化，但是还未记录到磁盘。这种页面称为脏页，将脏页记录到磁盘的过程称为刷脏。使用默认值，注释即可
+# innodb_lru_scan_depth = 2000
+#innodb_io_capacity和innodb_io_capacity_max保持一致，为2000-5000
 innodb_io_capacity = 4000
-innodb_io_capacity_max = 8000
+innodb_io_capacity_max = 4000
 # 事务等待获取资源等待的最长时间，超过这个时间还未分配到资源则会返回应用失败，默认50s
 innodb_lock_wait_timeout = 30
 # 日志组所在的路径，默认为data的home目录。为照顾xtrabackup还原的操作，建议不修改innodb_log_group_home_dir。
@@ -143,7 +145,7 @@ innodb_undo_logs = 128
 # 传统机械硬盘建议使用，而对于固态硬盘可以关闭
 #innodb_flush_neighbors = 1
 innodb_log_file_size = 1G
-innodb_log_buffer_size = 8M
+innodb_log_buffer_size = 16M
 # 控制是否使用独立purge线程
 innodb_purge_threads = 1
 # 改为ON时，允许单列索引最大达到3072。否则最大为767
@@ -154,7 +156,7 @@ innodb_print_all_deadlocks = 1
 innodb_sort_buffer_size = 16M
 
 ########import settings########
-innodb_flush_log_at_trx_commit = 0
+innodb_flush_log_at_trx_commit = 1
 innodb_flush_method = O_DIRECT
 
 ########semi sync replication settings########
@@ -180,8 +182,8 @@ sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_
 #############query cache settings#############
 # 开启缓存，能提升查询性能，但会对写性能造成一定的性能，尤其是频繁写的场景
 # mysql服务缓存以重用的线程数
-thread_cache_size = 120
+thread_cache_size = 32
 # 为查询结果所分配的缓存
 query_cache_size = 256M
-#当这个参数为1或ON时，则MySQL服务器会缓存所有查询结果（除了带有SELECT SQL_NO_CACHE的语句）
-query_cache_type = 1
+#当这个参数为1或ON时，则MySQL服务器会缓存所有查询结果（除了带有SELECT SQL_NO_CACHE的语句）。生产环境不能开启查询缓存，除非数据一成不变，极少被修改
+query_cache_type = 0
