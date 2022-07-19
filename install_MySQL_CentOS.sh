@@ -3,7 +3,7 @@
 #本脚本在CentOS系统上通过Generic包安装mysql 5.7数据库
 #安装前请确认脚本文件、tar包、配置模板等3个文件位于同一目录
 #Generic tar包下载页面 https://downloads.mysql.com/archives/community/
-tarball="mysql-5.7.35-linux-glibc2.12-x86_64.tar.gz"
+tarball="mysql-5.7.36-linux-glibc2.12-x86_64.tar.gz"
 template="my.cnf-standard"
 
 #如需更改mysql安装目录，请修改以下3个参数。
@@ -21,6 +21,11 @@ green='\e[1;32m'
 yellow='\e[1;33;40m'
 blue='\e[1;34m'
 default='\e[0m'
+
+#高精度计算器
+if ! rpm -qa | grep -E "^bc-"; then
+    yum install -y bc
+fi
 
 #1，安装前环境检查：操作系统版本、是否已运行或安装了mysql
 function check_env(){
@@ -117,6 +122,7 @@ function install_mysql(){
 	
 	ln -sf "${basedir}/bin/mysql" /usr/bin/mysql
 	ln -sf "${basedir}/bin/mysqldump" /usr/bin/mysqldump
+	ln -sf "${basedir}/bin/mysqldumpslow" /usr/bin/mysqldumpslow
 	ln -sf "${basedir}/bin/mysqlbinlog" /usr/bin/mysqlbinlog
 	cp "${OLDPWD}/${template}" ${conf}
 	echo "初始化已完成。"
@@ -124,7 +130,7 @@ function install_mysql(){
 
 #更改单项配置
 #函数传入两个参数：参数1，mysql的参数名；参数2，对应的参数值。
-#更新后的配置文件内容形如"setting = value"格式，如"server-id = 18"。
+#更新后的配置文件内容形如"setting = value"格式，如"server_id = 18"。
 #请注意，如果参数值需要带引号，请在传参时带上对应的引号。
 function update_setting(){
 	_setting=$1
@@ -148,32 +154,34 @@ function update_settings(){
 		return
 	fi
 	
-	update_setting "bind-address" 0.0.0.0
-	update_setting "port" 3306
-	
-	#设置server-id为IP地址的第4位
+	#设置server_id为IP地址的第4位
 	_id=`ip address | grep -P "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" | grep -v -w "lo" | grep -v -E "veth|docker|flannel|br-" | awk '{print $2}' | awk -F'/' 'NR==1{print $1}' | awk -F'.' '{print $4}'`
-	update_setting "server-id" ${_id}
+	update_setting "server_id" ${_id}
 	
 	#设置innodb_buffer_pool_size为内存的75%
 	_memory=`free -h | grep Mem | awk '{print $2}'`   #形如"15G"
 	_number=${_memory:0:${#_memory}-1}                #数字部分，15
-	_calculate=$((10#${_number}*3/4+1))               #十进制数字部分的75%（向下取整）+1，值为12
+	_calculate=$(echo "${_number}*3/4+1" | bc)        #十进制数字部分的75%（向下取整）+1，值为12
 	_unit=${_memory:${#_memory}-1}                    #内存单位：G
 	_size="${_calculate}${_unit}"                     #计算值和单位进行拼接，结果为"12G"
 	update_setting "innodb_buffer_pool_size" ${_size}
 	
+	#设置innodb_buffer_pool_instances为core数的一半
+	_core=`cat /proc/cpuinfo | grep processor | wc -l`    #CPU core数，如16
+	_instances=$(echo "${_core}/2" | bc)                  #CPU core数的一半，如8
+	update_setting "innodb_buffer_pool_instances" ${_instances}
+	
 	update_setting "basedir" ${basedir}
 	update_setting "datadir" ${datadir}
-	update_setting "pid-file" "${basedir}/mysql.pid"
-	update_setting "log-bin" "${logdir}/master-bin"
+	update_setting "pid_file" "${basedir}/mysql.pid"
+	update_setting "log_bin" "${logdir}/master-bin"
 	update_setting "log_error" "${logdir}/mysql-error.log"
 	if [ ! -f "${logdir}/mysql-error.log" ]; then      #MySQL bug：若自定义的error log文件不存在，mysql服务无法启动，必须提前创建，修改属主。
 		touch "${logdir}/mysql-error.log"
 		chown mysql:mysql "${logdir}/mysql-error.log"
 	fi
 	
-	update_setting "long_query_time" 4
+	update_setting "long_query_time" 5
 	update_setting "slow_query_log_file" "${logdir}/mysql-slow.log"
 	update_setting "relay_log" "${logdir}/mysql-relay.log"
 	update_setting "innodb_undo_directory" ${logdir}
@@ -193,10 +201,13 @@ function update_account(){
 	
 	mysql -uroot -e "create user 'bk'@'%' identified by 'bk@monitor';"
 	mysql -uroot -e "grant process,references,replication client,replication slave,select,show databases,show view on *.* to 'bk'@'%';"
-	echo "已创建账号bk，密码bk@monitor，用于监控。"
+	echo "已创建账号bk，密码bk@monitor，用于蓝鲸监控。"
 	
 	mysql -uroot -e "create user 'backup'@'%' identified by 'backup';"
 	mysql -uroot -e "grant process, select, reload, show view, lock tables, trigger, replication client, event on *.* to 'backup'@'%';"
+	#若为MySQL 8.0，授予replication_slave_admin权限后，可在从实例进行mysqldump操作，命令如下：
+	#mysqldump -ubackup -pbackup -R -E --triggers --single-transaction --dump-slave=2 --all-databases > slave_`date +'%Y%m%d%H%M%S'`.sql
+	#mysql -uroot -e "grant replication_slave_admin on *.* to backup;"
 	echo "已创建账号backup，密码backup，用于备份。"
 	
 	mysql -uroot -e "create user 'repl'@'%' identified by 'repl';"
@@ -278,4 +289,4 @@ update_account
 add_service
 customize
 
-echo -e "${green}恭喜，安装配置已完成，开始使用mysql吧！${default}"
+echo -e "${blue}恭喜，安装配置已完成，开始使用mysql吧！${default}"
