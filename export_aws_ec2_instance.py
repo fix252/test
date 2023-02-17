@@ -30,7 +30,7 @@ with open("/root/ec2.csv", "w", encoding="utf-8-sig", newline="") as csvf:
             if 'KeyName' not in j:
                 j['KeyName'] = []
             
-            # Customized instance tags.
+            name = ""
             project = ""
             group = ""
             app = ""
