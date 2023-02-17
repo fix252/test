@@ -12,7 +12,7 @@ ec2 = boto3.client(
     aws_secret_access_key="xxxx",
     region_name='ap-southeast-1',
     )
- 
+
 response = ec2.describe_instances()
 with open("/root/ec2.csv", "w", encoding="utf-8-sig", newline="") as csvf:
     writer = csv.writer(csvf)
