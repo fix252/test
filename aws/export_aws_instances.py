@@ -11,6 +11,7 @@ import datetime
 #Note: 1, Python3 and module boto3 is required, and boto3 can be installed with command: pip3 install boto3.
 #2, please update AWS access keys, regions and names, and resource types.
 
+account_owner="xx"
 access_key = "xxxx"
 secret_access_key = "xxxx"
 #sgp, hk and fra are customized short names for each region.
@@ -31,7 +32,7 @@ for z in regions:
             #Export ec2 instances
             response = client.describe_instances()
             now = time.strftime("%Y%m%d%H%M%S", time.localtime())
-            filename = regions[z] + "_" + r + "_" + now + ".csv"
+            filename = account_owner + "_" + regions[z] + "_" + r + "_" + now + ".csv"
             print(filename)
             with open(filename, "w", encoding="utf-8-sig", newline="") as csvf:
                 writer = csv.writer(csvf)
@@ -71,7 +72,7 @@ for z in regions:
             #Export reserved ec2 instances
             response = client.describe_reserved_instances()
             now = time.strftime("%Y%m%d%H%M%S", time.localtime())
-            filename = regions[z] + "_" + r + "_reserved_"+ now + ".csv"
+            filename = account_owner + "_" + regions[z] + "_" + r + "_reserved_"+ now + ".csv"
             print(filename)
             with open(filename, "w", encoding="utf-8-sig", newline="") as csvf:
                 writer = csv.writer(csvf)
@@ -88,7 +89,7 @@ for z in regions:
             #Export rds instances
             response = client.describe_db_instances()
             now = time.strftime("%Y%m%d%H%M%S", time.localtime())
-            filename = regions[z] + "_" + r + "_" + now + ".csv"
+            filename = account_owner + "_" + regions[z] + "_" + r + "_" + now + ".csv"
             print(filename)
             with open(filename, "w", encoding="utf-8-sig", newline="") as csvf:
                 writer = csv.writer(csvf)
@@ -120,7 +121,7 @@ for z in regions:
             #Export reserved rds instances
             response = client.describe_reserved_db_instances()
             now = time.strftime("%Y%m%d%H%M%S", time.localtime())
-            filename = regions[z] + "_" + r + "_reserved_"+ now + ".csv"
+            filename = account_owner + "_" + regions[z] + "_" + r + "_reserved_"+ now + ".csv"
             print(filename)
             with open(filename, "w", encoding="utf-8-sig", newline="") as csvf:
                 writer = csv.writer(csvf)
