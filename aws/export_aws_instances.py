@@ -36,7 +36,7 @@ for z in regions:
             print(filename)
             with open(filename, "w", encoding="utf-8-sig", newline="") as csvf:
                 writer = csv.writer(csvf)
-                csv_head = ["Index", "InstanceName", "Project", "Group", "APP", "LaunchTime", "InstanceID", "InstanceType", "PublicIP", "PrivateIP", "State", "KeyName", "ImageID", "Zone", "Archi", "Platform"]
+                csv_head = ["Index", "InstanceName", "Project", "Group", "APP", "CreateTime", "LaunchTime", "InstanceID", "InstanceType", "PublicIP", "PrivateIP", "State", "KeyName", "ImageID", "Zone", "Archi", "Platform"]
                 writer.writerow(csv_head)
                 index = 0
                 for i in response['Reservations']:
@@ -66,7 +66,7 @@ for z in regions:
                             if dic['Key'] == 'app':
                                 app = dic['Value']
                                 
-                        row_cvs = [index, name, project, group, app, j['LaunchTime'], j['InstanceId'], j['InstanceType'], j['PublicIpAddress'], j['PrivateIpAddress'], j['State']['Name'], j['KeyName'], j['ImageId'], j['Placement']['AvailabilityZone'], j['Architecture'], j['PlatformDetails']]
+                        row_cvs = [index, name, project, group, app, j['UsageOperationUpdateTime'], j['LaunchTime'], j['InstanceId'], j['InstanceType'], j['PublicIpAddress'], j['PrivateIpAddress'], j['State']['Name'], j['KeyName'], j['ImageId'], j['Placement']['AvailabilityZone'], j['Architecture'], j['PlatformDetails']]
                         writer.writerow(row_cvs)
             
             #Export reserved ec2 instances
