@@ -1,4 +1,5 @@
 import boto3
+from botocore.config import Config
 import csv
 import codecs
 import time
@@ -18,6 +19,8 @@ secret_access_key = "xxxx"
 regions = {"ap-southeast-1": "sgp", "ap-east-1": "hk", "eu-central-1": "fra"}
 resources = ["ec2", "rds"]
 
+config = Config(proxies={})
+
 for z in regions:
     for r in resources:
         client = boto3.client(
@@ -25,6 +28,7 @@ for z in regions:
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_access_key,
             region_name=z,
+            config=config,
             )
         
         #Export ec2 instances and reserved ec2 instances
