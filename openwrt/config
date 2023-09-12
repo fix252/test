@@ -1,0 +1,9 @@
+#1 opkg source
+/etc/opkg/distfeeds.conf
+
+#2 acme ssl certificate
+opkg install acme acme-dnsapi luci-app-acme luci-i18n-acme-en luci-i18n-acme-zh-cn
+
+#3 msmtp  https://openwrt.org/docs/guide-user/services/email/smtp.client
+opkg install msmtp
+cat /etc/msmtprc
