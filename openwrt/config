@@ -1,13 +1,16 @@
 #1 opkg source
 /etc/opkg/distfeeds.conf
 
-#2 acme ssl certificate
+#2 acme ssl certificate: https://github.com/acmesh-official/acme.sh/wiki/dnsapi
 opkg install acme acme-dnsapi luci-app-acme luci-i18n-acme-en luci-i18n-acme-zh-cn
 
-#3 uhttpd
+#3 uHTTPd
 opkg install uhttpd-mod-ubus libuhttpd-openssl luci-app-uhttpd luci-i18n-uhttpd-en luci-i18n-uhttpd-zh-cn
 
 #4 msmtp  https://openwrt.org/docs/guide-user/services/email/smtp.client
 opkg install msmtp
 cat /etc/msmtprc
 Test smtp by: echo -e "Subject: EMAIL_SUBJECT\n\nEMAIL_CONTENT" | msmtp -f EMAIL_SENDER EMAIL_RECEIVERS_WITH_SPACE_SEPERATER
+
+#5 WireGuard
+opkg install wireguard-tools kmod-wireguard luci-proto-wireguard luci-app-wireguard luci-i18n-wireguard-zh-cn
