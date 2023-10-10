@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Install msmtp and update /etc/msmtprc first.
+# Add hosts: 34.160.111.145 ifconfig.me in /etc/hosts.
 # Add crontab task: */2 * * * * sh check_public_IP.sh
 
 # WAN interface name
@@ -54,4 +55,6 @@ else
 fi
 
 #Send Email Notification
-echo -e "Subject: New IP at ${router_name}\n\n${result}" | msmtp -f ${email_sender} ${email_receiver}
+if [ ${result} ]; then
+        echo -e "Subject: New IP at ${router_name}\n\n${result}" | msmtp -f ${email_sender} ${email_receiver}
+fi
