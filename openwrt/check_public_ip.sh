@@ -2,7 +2,7 @@
 
 # Install msmtp and update /etc/msmtprc first.
 # Add hosts: 34.160.111.145 ifconfig.me in /etc/hosts.
-# Add crontab task: */2 * * * * sh check_public_IP.sh
+# Add crontab task: */2 * * * * sh /root/check_public_ip.sh
 
 # WAN interface name
 interface_name=""
