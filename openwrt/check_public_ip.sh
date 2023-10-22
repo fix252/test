@@ -5,7 +5,8 @@
 # Add crontab task: */2 * * * * sh /root/check_public_ip.sh
 
 # WAN interface name
-interface_name=""
+# interface_name="pppoe-wan"
+interface_name=$(ifconfig | grep -i "pppoe" | awk '{print $1}')
 
 # Router name
 router_name=""
