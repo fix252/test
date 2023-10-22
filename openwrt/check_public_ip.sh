@@ -25,6 +25,10 @@ interface_ip=$(ifconfig ${interface_name} | sed -n "2,2p" | awk '{print $2}' | a
 outbound_ip=$(curl -s ifconfig.me)
 history_ip="/root/device_ip.txt"
 
+if [ ! -a ${history_ip} ]; then
+        touch ${history_ip}
+fi
+
 if [ ${outbound_ip} == ${interface_ip} ]; then
         current_ip="${interface_ip}"
         last_ip=$(tail -1 ${history_ip} | awk '{print $2}')
