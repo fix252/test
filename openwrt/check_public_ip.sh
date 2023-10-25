@@ -6,7 +6,7 @@
 
 # WAN interface name
 # interface_name="pppoe-wan"
-interface_name=$(ifconfig | grep -i "pppoe" | awk '{print $1}')
+interface_name=$(ifconfig | grep -i "pppoe-wan" | awk '{print $1}')
 
 # Router name
 router_name=""
