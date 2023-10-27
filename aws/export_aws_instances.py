@@ -17,7 +17,7 @@ access_key = "xxxx"
 secret_access_key = "xxxx"
 #sgp, hk and fra are customized short names for each region.
 regions = {"ap-southeast-1": "sgp", "ap-east-1": "hk", "eu-central-1": "fra"}
-resources = ["ec2", "rds"]
+resources = ["ec2", "rds", "elasticache"]
 
 config = Config(proxies={})
 
@@ -139,4 +139,63 @@ for z in regions:
                     endtime = i['StartTime'] + datetime.timedelta(seconds=i['Duration'])
                     
                     row_cvs = [index, i['ReservedDBInstanceId'], i['LeaseId'], i['DBInstanceClass'], i['DBInstanceCount'], i['StartTime'], i['Duration']/86400, endtime, i['ProductDescription'], i['OfferingType'], i['MultiAZ'], i['State'], i['CurrencyCode'], i['FixedPrice']]
+                    writer.writerow(row_cvs)
+        #Export elasticache instances and reserved elasticache instances
+        elif r == "elasticache":
+            #Export elasticache instances
+            response = client.describe_replication_groups()
+            now = time.strftime("%Y%m%d%H%M%S", time.localtime())
+            filename = now + "_" + account_owner + "_" + regions[z] + "_" + r + ".csv"
+            print(filename)
+            with open(filename, "w", encoding="utf-8-sig", newline="") as csvf:
+                writer = csv.writer(csvf)
+                csv_head = ["Index", "ClusterName", "Project", "Group", "APP", "NodeCount", "CacheNodeType", "Engine", "EngineVersion", "Status", "CreateTime", "MultiAZ"]
+                writer.writerow(csv_head)
+                
+                index = 0
+                for i in response['ReplicationGroups']:
+                    index = index + 1
+                    
+                    response_tmp = client.describe_cache_clusters(CacheClusterId=i['MemberClusters'][0])
+                    engine = response_tmp['CacheClusters'][0]['Engine']
+                    engineVersion = response_tmp['CacheClusters'][0]['EngineVersion']
+                    
+                    try:
+                        createTime = i['ReplicationGroupCreateTime']
+                    except KeyError:
+                        createTime = response_tmp['CacheClusters'][0]['CacheClusterCreateTime']
+                    
+                    response_tmp = client.list_tags_for_resource(ResourceName=i['ARN'],)
+                    project = ""
+                    group = ""
+                    app = ""
+                    for dic in response_tmp['TagList']:
+                        # Customized tags, case sensitive.
+                        if dic['Key'] == 'project':
+                            project = dic['Value']
+                        if dic['Key'] == 'group':
+                            group = dic['Value']
+                        if dic['Key'] == 'app':
+                            app = dic['Value']
+                    
+                    row_cvs = [index, i['ReplicationGroupId'], project, group, app, len(i['MemberClusters']) ,i['CacheNodeType'], engine, engineVersion, i['Status'], createTime, i['MultiAZ']]
+                    writer.writerow(row_cvs)
+                    
+            #Export reserved elasticache instances
+            response = client.describe_reserved_cache_nodes()
+            now = time.strftime("%Y%m%d%H%M%S", time.localtime())
+            filename = now + "_" + account_owner + "_" + regions[z] + "_" + r + "_reserved.csv"
+            print(filename)
+            with open(filename, "w", encoding="utf-8-sig", newline="") as csvf:
+                writer = csv.writer(csvf)
+                csv_head = ["Index", "ReservedCacheNodeId", "CacheNodeType", "Count", "StartTime", "Duration", "EndTime", "Product", "OfferingType", "State", "Price"]
+                writer.writerow(csv_head)
+            
+                index = 0
+                for i in response['ReservedCacheNodes']:
+                    index = index + 1
+                    #utcstart = datetime.datetime.strptime(i['StartTime'], "%Y-%m-%d %H:%M:%S.%f%z").replace(tzinfo=None)
+                    endtime = i['StartTime'] + datetime.timedelta(seconds=i['Duration'])
+                    
+                    row_cvs = [index, i['ReservedCacheNodeId'], i['CacheNodeType'], i['CacheNodeCount'], i['StartTime'], i['Duration']/86400, endtime, i['ProductDescription'], i['OfferingType'], i['State'], i['FixedPrice']]
                     writer.writerow(row_cvs)
