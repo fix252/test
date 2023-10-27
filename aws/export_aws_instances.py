@@ -140,6 +140,7 @@ for z in regions:
                     
                     row_cvs = [index, i['ReservedDBInstanceId'], i['LeaseId'], i['DBInstanceClass'], i['DBInstanceCount'], i['StartTime'], i['Duration']/86400, endtime, i['ProductDescription'], i['OfferingType'], i['MultiAZ'], i['State'], i['CurrencyCode'], i['FixedPrice']]
                     writer.writerow(row_cvs)
+                    
         #Export elasticache instances and reserved elasticache instances
         elif r == "elasticache":
             #Export elasticache instances
