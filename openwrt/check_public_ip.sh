@@ -58,7 +58,8 @@ if [ "${outbound_ip}" == "${interface_ip}" ]; then
                 fi
         fi
 else
-        email_content="$(date +'%F %T %A %z'):\tPublic IP Error: outbound IP ${outbound_ip} != interface IP ${interface_ip}."
+        email_subject="Subject: Public IP Error at ${router_name}"
+        email_content="$(date +'%F %T %A %z'):\tOutbound IP ${outbound_ip} != interface IP ${interface_ip}."
 fi
 
 #Send Email Notification
