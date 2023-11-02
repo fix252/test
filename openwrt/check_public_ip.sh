@@ -26,14 +26,15 @@ interface_ip=$(ifconfig ${interface_name} | sed -n "2,2p" | awk '{print $2}' | a
 outbound_ip=$(curl -s ifconfig.me)
 history_ip="/root/device_ip.txt"
 
-if [ ! -f ${history_ip} ]; then
-        touch ${history_ip}
+if [ ! -f "${history_ip}" ]; then
+        touch "${history_ip}"
 fi
 
-if [ ${outbound_ip} == ${interface_ip} ]; then
+if [ "${outbound_ip}" == "${interface_ip}" ]; then
         current_ip="${interface_ip}"
         last_ip=$(tail -1 ${history_ip} | awk '{print $2}')
-        if [ -z ${last_ip} ] || [ ${last_ip} != ${current_ip} ]; then
+        
+        if [ -z "${last_ip}" ] || [ "${last_ip}" != "${current_ip}" ]; then
                 echo -e "$(date +'%Y%m%d%H%M%S') ${current_ip}" >> ${history_ip}
                 
                 # Update DNS record
@@ -50,7 +51,7 @@ if [ ${outbound_ip} == ${interface_ip} ]; then
                           \"type\": \"A\"
                         }")
                 
-                if echo ${update} | grep -q "\"success\":true";then
+                if echo "${update}" | grep -q "\"success\":true";then
                         email_content="$(date +'%F %T %A %z'):\t${current_ip}, and update dns record successfully."
                 else
                         email_content="$(date +'%F %T %A %z'):\t${current_ip}, but failed to update dns record with error message\n${update}"
@@ -61,6 +62,6 @@ else
 fi
 
 #Send Email Notification
-if [ ${email_content} ]; then
+if [ "${email_content}" ]; then
         echo -e "${email_subject}\n\n${email_content}" | msmtp -f ${email_sender} ${email_receiver}
 fi
