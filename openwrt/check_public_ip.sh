@@ -23,8 +23,19 @@ email_subject="Subject: New IP at ${router_name}"
 email_content=""     #Keep content null here.
 
 interface_ip=$(ifconfig ${interface_name} | sed -n "2,2p" | awk '{print $2}' | awk -F : '{print $2}')
-outbound_ip=$(curl -s ifconfig.me)
+outbound_ip=""      #keep outboud ip null here.
 history_ip="/root/device_ip.txt"
+
+tools="icanhazip.com ifconfig.me api.ipify.org"         #Sites to get external ip, space seperator
+
+for u in ${tools}; do
+        #Get external IP
+        outbound_ip=$(curl --connect-timeout 3 -s ${u})
+        if [ "${outbound_ip}" ]; then
+                # echo ${u} ${outbound_ip}
+                break
+        fi
+done
 
 if [ ! -f "${history_ip}" ]; then
         touch "${history_ip}"
