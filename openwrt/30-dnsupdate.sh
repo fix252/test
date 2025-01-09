@@ -47,6 +47,7 @@ function update_dns_record(){
 			  \"name\": \"${_record_name}\",
 			  \"type\": \"${_record_type}\",
 			  \"content\": \"${_record_value}\",
+     			  \"ttl\": 300, 
 			  \"proxied\": false
 			}")
 			
