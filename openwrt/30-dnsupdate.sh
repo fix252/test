@@ -96,12 +96,12 @@ if [ "$ACTION" == "ifup" ] && [ "$DEVICE" == "pppoe-wan" ]; then
 		echo -e "${email_subject}\n\n${email_content}" | msmtp -f ${email_sender} ${email_receiver}
 
     # Send messages to Apple device via bark
-    send_bark_notification()
+    send_bark_notification
     
 fi
 
 # Other event if you care
 if [ "$DEVICE" == "WireGuard" ]; then
     # Send messages to Apple device via bark
-    send_bark_notification()
+    send_bark_notification
 fi
