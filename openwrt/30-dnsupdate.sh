@@ -20,7 +20,11 @@ email_receiver=""    # Update email receiver. Use space seperator for multiple r
 email_subject="Subject: "   # Fixed prefix for msmtp command, do NOT modify it.
 email_content=""   # Keep content null here, do NOT modify it
 
-# Update CloudFlare DNS record via CloudFlare API
+# Public IPv4 and IPv6 on interface pppoe-wan
+wan_ipv4=$(ip -4 addr show "pppoe-wan" | sed -n "2,2p" | awk '{print $2}')
+wan_ipv6=$(ip -6 addr show "pppoe-wan" | grep global | awk '{print $2}' | awk -F / '{print $1}')
+
+# Update DNS record via CloudFlare API
 # 6 parameters are required as follows:
 # String zone_id
 # String record_id
@@ -54,19 +58,27 @@ function update_dns_record(){
 	echo "${_update_result}"
 }
 
-# OpenWRT hotplug event is about pppoe-wan ifup
+# Send notifications to Apple devices via Bark
+function send_bark_notification(){
+    curl -X "POST" "https://YOUR.BARK.SERVER/push" \
+	 -H 'Content-Type: application/json; charset=utf-8' \
+	 -d "{
+		\"title\": \"${router_name} $DEVICE $ACTION\",
+		\"body\": \"IPv4: ${wan_ipv4}\nIPv6: ${wan_ipv6}\",
+		\"device_keys\": [\"YOUR_APPLE_DEVICE_ID1\", \"YOUR_APPLE_DEVICE_ID2\"]
+	     }"
+}
+
+# OpenWRT hotplug event for pppoe-wan ifup
 if [ "$ACTION" == "ifup" ] && [ "$DEVICE" == "pppoe-wan" ]; then
 		sleep 10
 		
 		email_subject="${email_subject}Public IP at ${router_name}"
 		email_content="$(date +'%F %T %A %z')"
 		
-		wan_ipv4=$(ip -4 addr show "pppoe-wan" | sed -n "2,2p" | awk '{print $2}')
-		wan_ipv6=$(ip -6 addr show "pppoe-wan" | grep global | awk '{print $2}' | awk -F / '{print $1}')
-		
 		update_result1=$(update_dns_record "${zone_id}" "${a_record_id}" "${api_token}" "${record_name}" "A" "${wan_ipv4}")
 		
-		if echo "${update_result1}" | grep -q "\"success\":true";then
+		if echo "${update_result1}" | grep -q "\"success\":true"; then
 			email_content="${email_content}\nIPv4: ${wan_ipv4}, and update A record successfully."
 		else
 			email_content="${email_content}\nIPv4: ${wan_ipv4}, but update A record failed with message\n${update_result1}"
@@ -74,7 +86,7 @@ if [ "$ACTION" == "ifup" ] && [ "$DEVICE" == "pppoe-wan" ]; then
 		
 		if [ "${wan_ipv6}" ]; then
 			update_result2=$(update_dns_record "${zone_id}" "${aaaa_record_id}" "${api_token}" "${record_name}" "AAAA" "${wan_ipv6}")
-			if echo "${update_result2}" | grep -q "\"success\":true";then
+			if echo "${update_result2}" | grep -q "\"success\":true"; then
 				email_content="${email_content}\nIPv6: ${wan_ipv6}, and update AAAA record successfully."
 			else
 				email_content="${email_content}\nIPv6: ${wan_ipv6}, but update AAAA record failed with message\n${update_result2}"
@@ -84,11 +96,12 @@ if [ "$ACTION" == "ifup" ] && [ "$DEVICE" == "pppoe-wan" ]; then
 		echo -e "${email_subject}\n\n${email_content}" | msmtp -f ${email_sender} ${email_receiver}
 
     # Send messages to Apple device via bark
-		curl https://YOUR.BARK.SERVER/YOUR_APPLE_DEVICE_ID/${router_name}%20$DEVICE%20$ACTION/IPv4:%20${wan_ipv4}%0aIPv6:%20${wan_ipv6}
+    send_bark_notification()
+    
 fi
 
 # Other event if you care
 if [ "$DEVICE" == "WireGuard" ]; then
     # Send messages to Apple device via bark
-		curl https://YOUR.BARK.SERVER/YOUR_APPLE_DEVICE_ID/${router_name}%20$DEVICE%20$ACTION
+    send_bark_notification()
 fi
