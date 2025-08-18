@@ -20,9 +20,11 @@ email_receiver=""    # Update email receiver. Use space seperator for multiple r
 email_subject="Subject: "   # Fixed prefix for msmtp command, do NOT modify it.
 email_content=""   # Keep content null here, do NOT modify it
 
-# Public IPv4 and IPv6 on interface pppoe-wan
-wan_ipv4=$(ip -4 addr show "pppoe-wan" | sed -n "2,2p" | awk '{print $2}')
-wan_ipv6=$(ip -6 addr show "pppoe-wan" | grep global | awk '{print $2}' | awk -F / '{print $1}')
+# IPv4 and IPv6 on interface pppoe-wan
+# wan_ipv4=$(ip -4 addr show "pppoe-wan" | sed -n "2,2p" | awk '{print $2}')
+# wan_ipv6=$(ip -6 addr show "pppoe-wan" | grep global | awk '{print $2}' | awk -F / '{print $1}')
+wan_ipv4=$(ubus call network.interface.wan status | jsonfilter -e '@["ipv4-address"][0].address')
+wan_ipv6=$(ubus call network.interface.wan_6 status | jsonfilter -e '@["ipv6-address"][0].address')
 
 # Update DNS record via CloudFlare API
 # 6 parameters are required as follows:
@@ -69,6 +71,18 @@ function send_bark_notification(){
 	     }"
 }
 
+# Send notifications to WXWork webhook
+function send_wxwork_notification(){
+	curl 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_WXWORK_WEBHOOK_ID' \
+    	-H 'Content-Type: application/json' \
+    	-d "{
+            	\"msgtype\": \"text\",
+            	\"text\": {
+                          	\"content\": \"${router_name} IPs\nIPv4: ${wan_ipv4}\nIPv6: ${wan_ipv6}\"
+                      	  }
+         	}"
+}
+
 # OpenWRT hotplug event for pppoe-wan ifup
 if [ "$ACTION" == "ifup" ] && [ "$DEVICE" == "pppoe-wan" ]; then
 		sleep 10
@@ -92,16 +106,15 @@ if [ "$ACTION" == "ifup" ] && [ "$DEVICE" == "pppoe-wan" ]; then
 				email_content="${email_content}\nIPv6: ${wan_ipv6}, but update AAAA record failed with message\n${update_result2}"
 			fi
 		fi
-		
-		echo -e "${email_subject}\n\n${email_content}" | msmtp -f ${email_sender} ${email_receiver}
 
-    # Send messages to Apple device via bark
+    # Send notifications
     send_bark_notification
-    
+	send_wxwork_notification
+	echo -e "${email_subject}\n\n${email_content}" | msmtp -f ${email_sender} ${email_receiver}
 fi
 
 # Other event if you care
 if [ "$DEVICE" == "WireGuard" ]; then
-    # Send messages to Apple device via bark
     send_bark_notification
+	send_wxwork_notification
 fi
