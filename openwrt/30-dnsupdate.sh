@@ -73,7 +73,7 @@ function send_bark_notification(){
 
 # Send notifications to WXWork webhook
 function send_wxwork_notification(){
-	curl 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_WXWORK_WEBHOOK_ID' \
+	curl "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_WXWORK_WEBHOOK_ID" \
     	-H 'Content-Type: application/json' \
     	-d "{
             	\"msgtype\": \"text\",
