@@ -45,7 +45,7 @@ if [ "${outbound_ip}" == "${interface_ip}" ]; then
         current_ip="${interface_ip}"
         last_ip=$(tail -1 ${history_ip} | awk '{print $2}')
         
-        if [ -z "${last_ip}" ] || [ "${last_ip}" != "${current_ip}" ]; then
+        if [[ "${last_ip}" != "${current_ip}" ]]; then
                 echo -e "$(date +'%Y%m%d%H%M%S') ${current_ip}" >> ${history_ip}
                 
                 # Update DNS record
