@@ -53,32 +53,37 @@ function update_dns_record(){
 			  \"name\": \"${_record_name}\",
 			  \"type\": \"${_record_type}\",
 			  \"content\": \"${_record_value}\",
-     			  \"ttl\": 300, 
-			  \"proxied\": false
+     		  \"proxied\": false,
+		 	  \"ttl\": 300, 
+			  \"comment\": \"$(date +'%F %T %A')\"
 			}")
 			
 	echo "${_update_result}"
 }
 
 # Send notifications to Apple devices via Bark
+# 1 parameter is required as follows:
+# $1 String notification_body
 function send_bark_notification(){
     curl -X "POST" "https://YOUR.BARK.SERVER/push" \
 	 -H 'Content-Type: application/json; charset=utf-8' \
 	 -d "{
 		\"title\": \"${router_name} $DEVICE $ACTION\",
-		\"body\": \"IPv4: ${wan_ipv4}\nIPv6: ${wan_ipv6}\",
+		\"body\": \"$1\",
 		\"device_keys\": [\"YOUR_APPLE_DEVICE_ID1\", \"YOUR_APPLE_DEVICE_ID2\"]
 	     }"
 }
 
 # Send notifications to WXWork webhook
+# 1 parameter is required as follows:
+# $1 String notification_content
 function send_wxwork_notification(){
 	curl "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_WXWORK_WEBHOOK_ID" \
     	-H 'Content-Type: application/json' \
     	-d "{
             	\"msgtype\": \"text\",
             	\"text\": {
-                          	\"content\": \"${router_name} IPs\nIPv4: ${wan_ipv4}\nIPv6: ${wan_ipv6}\"
+                          	\"content\": \"$1\"
                       	  }
          	}"
 }
@@ -88,33 +93,33 @@ if [ "$ACTION" == "ifup" ] && [ "$DEVICE" == "pppoe-wan" ]; then
 		sleep 10
 		
 		email_subject="${email_subject}Public IP at ${router_name}"
-		email_content="$(date +'%F %T %A %z')"
+		email_content="$(date +'%F %T %A')"
 		
 		update_result1=$(update_dns_record "${zone_id}" "${a_record_id}" "${api_token}" "${record_name}" "A" "${wan_ipv4}")
 		
 		if echo "${update_result1}" | grep -q "\"success\":true"; then
-			email_content="${email_content}\nIPv4: ${wan_ipv4}, and update A record successfully."
+			email_content="${email_content}\nIPv4: ${wan_ipv4}, and update succeed."
 		else
-			email_content="${email_content}\nIPv4: ${wan_ipv4}, but update A record failed with message\n${update_result1}"
+			email_content="${email_content}\nIPv4: ${wan_ipv4}, but update failed: \n${update_result1}"
 		fi
 		
 		if [ "${wan_ipv6}" ]; then
 			update_result2=$(update_dns_record "${zone_id}" "${aaaa_record_id}" "${api_token}" "${record_name}" "AAAA" "${wan_ipv6}")
 			if echo "${update_result2}" | grep -q "\"success\":true"; then
-				email_content="${email_content}\nIPv6: ${wan_ipv6}, and update AAAA record successfully."
+				email_content="${email_content}\nIPv6: ${wan_ipv6}, and update succeed."
 			else
-				email_content="${email_content}\nIPv6: ${wan_ipv6}, but update AAAA record failed with message\n${update_result2}"
+				email_content="${email_content}\nIPv6: ${wan_ipv6}, but update failed: \n${update_result2}"
 			fi
 		fi
 
     # Send notifications
-    send_bark_notification
-	send_wxwork_notification
+    send_bark_notification ${email_content}
+	send_wxwork_notification ${email_content}
 	echo -e "${email_subject}\n\n${email_content}" | msmtp -f ${email_sender} ${email_receiver}
 fi
 
 # Other event if you care
 if [ "$DEVICE" == "WireGuard" ]; then
-    send_bark_notification
-	send_wxwork_notification
+    send_bark_notification "IPv4: ${wan_ipv4}\nIPv6: {wan_ipv6}"
+	send_wxwork_notification "${router_name} $DEVICE $ACTION\nIPv4: ${wan_ipv4}\nIPv6: {wan_ipv6}"
 fi
