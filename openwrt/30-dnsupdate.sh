@@ -120,6 +120,6 @@ fi
 
 # Other event if you care
 if [ "$DEVICE" == "WireGuard" ]; then
-    send_bark_notification "IPv4: ${wan_ipv4}\nIPv6: {wan_ipv6}"
-	send_wxwork_notification "${router_name} $DEVICE $ACTION\nIPv4: ${wan_ipv4}\nIPv6: {wan_ipv6}"
+    send_bark_notification "IPv4: ${wan_ipv4}\nIPv6: ${wan_ipv6}"
+	send_wxwork_notification "${router_name} $DEVICE $ACTION\nIPv4: ${wan_ipv4}\nIPv6: ${wan_ipv6}"
 fi
