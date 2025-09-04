@@ -90,27 +90,27 @@ function send_wxwork_notification(){
 
 # OpenWRT hotplug event for pppoe-wan ifup
 if [ "$ACTION" == "ifup" ] && [ "$DEVICE" == "pppoe-wan" ]; then
-		sleep 10
+	sleep 10
 		
-		email_subject="${email_subject}Public IP at ${router_name}"
-		email_content="$(date +'%F %T %A')"
+	email_subject="${email_subject}Public IP at ${router_name}"
+	email_content="$(date +'%F %T %A')"
 		
-		update_result1=$(update_dns_record "${zone_id}" "${a_record_id}" "${api_token}" "${record_name}" "A" "${wan_ipv4}")
+	update_result1=$(update_dns_record "${zone_id}" "${a_record_id}" "${api_token}" "${record_name}" "A" "${wan_ipv4}")
 		
-		if echo "${update_result1}" | grep -q "\"success\":true"; then
+	if echo "${update_result1}" | grep -q "\"success\":true"; then
 			email_content="${email_content}\nIPv4: ${wan_ipv4}, and update succeed."
-		else
+	else
 			email_content="${email_content}\nIPv4: ${wan_ipv4}, but update failed: \n${update_result1}"
-		fi
+	fi
 		
-		if [ "${wan_ipv6}" ]; then
+	if [ "${wan_ipv6}" ]; then
 			update_result2=$(update_dns_record "${zone_id}" "${aaaa_record_id}" "${api_token}" "${record_name}" "AAAA" "${wan_ipv6}")
 			if echo "${update_result2}" | grep -q "\"success\":true"; then
 				email_content="${email_content}\nIPv6: ${wan_ipv6}, and update succeed."
 			else
 				email_content="${email_content}\nIPv6: ${wan_ipv6}, but update failed: \n${update_result2}"
 			fi
-		fi
+	fi
 
     # Send notifications
     send_bark_notification ${email_content}
